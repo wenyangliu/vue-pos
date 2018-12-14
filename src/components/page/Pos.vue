@@ -1,289 +1,164 @@
 <template>
-    <div class="pos">
-       <el-row>
-           <el-col :span='7' class="pos-order" id="order-list">
-               <el-tabs>
-                   <el-tab-pane label="点餐">
-                       <el-table :data="tableData" border style="width: 100%;">
-                           <el-table-column prop="goodsName" label="商品"></el-table-column>
-                           <el-table-column prop="count" label="量" width="50"></el-table-column>
-                           <el-table-column prop="price" label="金额" width="70"></el-table-column>
-                           <el-table-column label="操作" width="100" fixed="right">
-                               <template slot-scope="scope">
-                                   <el-button type="text" size="small" @click="delSingleGoods(scope.row)">删除</el-button>
-                                   <el-button type="text" size="small" @click="addOrderList(scope.row)">增加</el-button>
-                               </template>
-                           </el-table-column>
-                       </el-table>
+    <div>
+        <!--<div class="bg">点击上传</div>-->
+        <!--<input type="file" class="input-file" name="fulAvatar" @change="changeImage($event)" accept="image/gif,image/jpeg,image/jpg,image/png">-->
+        <!--<img :src="avatar" alt="" name="avatar">-->
+        <!--<div class="text" @click="upload" v-if="file">确定上传</div>-->
 
-                       <div class="totalDiv">
-                           <small>数量：</small>
-                           <strong>{{totalCount}}</strong> &nbsp;&nbsp;&nbsp;&nbsp;
-                           <small>总计：</small>
-                           <strong>{{totalMoney}}</strong> 元
-                       </div>
-
-                       <div class="order-btn">
-                           <el-button type="warning">挂单</el-button>
-                           <el-button type="danger" @click="delAllGoods">删除</el-button>
-                           <el-button type="success" @click="checkout">结账</el-button>
-                       </div>
-                   </el-tab-pane>
-
-                   <el-tab-pane label="挂单">
-                       挂单
-                   </el-tab-pane>
-
-                   <el-tab-pane label="外卖">
-                       外卖
-                   </el-tab-pane>
-
-               </el-tabs>
-           </el-col>
-           <el-col :span='17'>
-
-               <div class="often-goods">
-                   <div class="title">常用商品</div>
-                   <div class="often-goods-list">
-                       <ul>
-                           <li v-for="goods in oftenGoods" @click="addOrderList(goods)">
-                               <span>{{goods.goodsName}}</span>
-                               <span class="o-price">￥{{goods.price}}元</span>
-                           </li>
-                       </ul>
-                   </div>
-               </div>
-
-               <div class="goods-type">
-                   <el-tabs>
-
-                       <el-tab-pane label="汉堡">
-                           <ul class="cookList">
-                               <li v-for="goods in type0Goods">
-                                   <span class="foodImg">
-                                       <img :src="goods.goodsImg" width="100%">
-                                   </span>
-                                   <span class="foodName">{{goods.goodsName}}</span>
-                                   <span class="foodPrice">￥{{goods.price}}元</span>
-                               </li>
-                           </ul>
-                       </el-tab-pane>
-
-                       <el-tab-pane label="小食">
-                           <ul class="cookList">
-                               <li v-for="goods in type1Goods">
-                                   <span class="foodImg">
-                                       <img :src="goods.goodsImg" width="100%">
-                                   </span>
-                                   <span class="foodName">{{goods.goodsName}}</span>
-                                   <span class="foodPrice">￥{{goods.price}}元</span>
-                               </li>
-                           </ul>
-                       </el-tab-pane>
-
-                       <el-tab-pane label="饮料">
-                           <ul class="cookList">
-                               <li v-for="goods in type2Goods">
-                                   <span class="foodImg">
-                                       <img :src="goods.goodsImg" width="100%">
-                                   </span>
-                                   <span class="foodName">{{goods.goodsName}}</span>
-                                   <span class="foodPrice">￥{{goods.price}}元</span>
-                               </li>
-                           </ul>
-                       </el-tab-pane>
-
-                       <el-tab-pane label="套餐">
-                           <ul class="cookList">
-                               <li v-for="goods in type3Goods">
-                                   <span class="foodImg">
-                                       <img :src="goods.goodsImg" width="100%">
-                                   </span>
-                                   <span class="foodName">{{goods.goodsName}}</span>
-                                   <span class="foodPrice">￥{{goods.price}}元</span>
-                               </li>
-                           </ul>
-                       </el-tab-pane>
-
-                   </el-tabs>
-               </div>
-
-
-           </el-col>
-       </el-row>
+        <div class="image-view">
+            <div class="addbox">
+                <input type="file" ref="files" @change="changeImage($event)">
+                <div class="addbtn">+</div>
+            </div>
+            <div class="view">
+                <div class="item" v-for="(item, index) in imgBase64">
+                    <span class="cancel-btn" @click="delImg(index)">x</span>
+                    <img :src="item">
+                </div>
+            </div>
+        </div>
+        <button class="text" @click="upload">确定上传</button>
     </div>
+
 </template>
 
 <script>
     import axios from 'axios'
+
+    let formData
     export default {
         name: 'Pos',
-        created() {
-          //读取常用商品列表
-          axios.get('http://jspang.com/DemoApi/oftenGoods.php')
-            .then(res => {
-              console.log(res)
-              this.oftenGoods = res.data
-            })
-            .catch(error => {
-              console.log(error)
-              alert('网络错误，不能访问')
-            })
-          //读取分类商品列表
-          axios.get('http://jspang.com/DemoApi/typeGoods.php')
-            .then(res => {
-              this.type0Goods = res.data[0]
-              this.type1Goods = res.data[1]
-              this.type2Goods = res.data[2]
-              this.type3Goods = res.data[3]
-            })
-            .catch(error => {
-              console.log(error)
-              alert('网络错误，不能访问')
-            })
-        },
-      mounted: function () {
-        let orderHeight = document.body.clientHeight
-        document.getElementById('order-list').style.height = orderHeight + 'px'
-      },
-        data () {
+        data() {
             return {
-              tableData: [],
-              oftenGoods: [],
-              type0Goods: [],
-              type1Goods: [],
-              type2Goods: [],
-              type3Goods: [],
-              totalMoney: 0, //订单总价格
-              totalCount: 0  //订单商品总数量
+                avatar: '',
+                file: '',
+                imgBase64: []
             }
         },
-      methods: {
-          addOrderList(goods) {
-            this.totalCount = 0
-            this.totalMoney = 0
-            let isHave = false, len = this.tableData.length
-            for (let i = 0; i < len; i++) {
-              console.log(this.tableData[i].goodsId)
-              if (this.tableData[i].goodsId === goods.goodsId) {
-                isHave = true
-              }
+        created() {
+            this.avatar = this.imgUrl
+        },
+        methods: {
+            changeImage(e) {
+                console.log(e)
+                const _this = this
+                const file = e.target.files[0]
+                formData = new FormData()
+                formData.append('file', file)
+                console.log(_this.filesArr)
+                const reader = new FileReader()
+                reader.onload = function (e) {
+                    _this.imgBase64.push(e.target.result)
+                }
+                reader.readAsDataURL(file)
+            },
+            delImg(index) {
+                this.imgBase64.splice(index, 1)
+            },
+            upload() {
+                axios.post('http://localhost:3000/api/upload', formData)
+                    .then(res => {
+                        console.log(res)
+                    })
+                    .catch(err => {
+                        console.log(err)
+                    })
             }
-            if (isHave) {
-              let arr = this.tableData.filter(o => o.goodsId === goods.goodsId)
-              arr[0].count++
-            } else {
-              let newGoods = {goodsId: goods.goodsId, goodsName:goods.goodsName,price:goods.price,count:1}
-              this.tableData.push(newGoods)
-            }
-            this.getAllMoney()
-          },
-        delSingleGoods(goods) {
-            this.tableData = this.tableData.filter(o => o.goodsId !== goods.goodsId)
-          this.getAllMoney()
-        },
-        getAllMoney() {
-          this.totalCount = 0
-          this.totalMoney = 0
-          if (this.tableData) {
-            this.tableData.forEach(e => {
-              this.totalCount += e.count
-              this.totalMoney = this.totalMoney + (e.price * e.count)
-            })
-          }
-        },
-        delAllGoods() {
-          this.tableData = []
-          this.totalCount = 0
-          this.totalMoney = 0
-        },
-        checkout() {
-          if (this.totalCount!=0) {
-            this.tableData = [];
-            this.totalCount = 0;
-            this.totalMoney = 0;
-            this.$message({
-              message: '结账成功，感谢你又为店里出了一份力!',
-              type: 'success'
-            });
 
-          }else{
-            this.$message.error('不能空结。老板了解你急切的心情！');
-          }
+            // changeImage(e) {
+            //   console.log(e)
+            //   const file = e.target.files[0]
+            //   const formData = new FormData()
+            //   formData.append('file', file)
+            //   axios.post('http://localhost:3000/api/upload', formData)
+            //     .then(res => {
+            //       console.log(res)
+            //     })
+            //     .catch(err => {
+            //       console.log(err)
+            //     })
+            // }
         }
-      }
     }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-    .pos{
-        font-size: 12px;
+    * {
+        margin: 0 auto;
+        padding: 0;
+        font-family: "微软雅黑";
     }
-    .pos-order{
 
-        background-color: #F9FAFC;
-        border-right:1px solid #C0CCDA;
+    .clearboth::after {
+        content: "";
+        display: block;
+        clear: both;
     }
-    .order-btn{
-        margin-top:10px;
+
+    .image-view {
+        width: 400px;
+        height: 300px;
+        margin: 50px auto;
+    }
+
+    .image-view .addbox {
+        float: left;
+        position: relative;
+        height: 100px;
+        width: 100px;
+        margin-bottom: 20px;
         text-align: center;
     }
-    .title{
-        height: 20px;
-        border-bottom:1px solid #D3DCE6;
-        background-color: #F9FAFC;
-        padding:10px;
+
+    .image-view .addbox input {
+        position: absolute;
+        left: 0;
+        height: 100px;
+        width: 100px;
+        opacity: 0;
     }
-    .often-goods-list ul li{
-        list-style: none;
-        float:left;
-        border:1px solid #E5E9F2;
-        padding:10px;
-        margin:5px;
-        background-color:#fff;
+
+    .image-view .addbox .addbtn {
+        float: left;
+        height: 100px;
+        width: 100px;
+        line-height: 100px;
+        color: #fff;
+        font-size: 40px;
+        background: #ccc;
+        border-radius: 10px;
+    }
+
+    .image-view .item {
+        position: relative;
+        float: left;
+        height: 100px;
+        width: 100px;
+        margin: 10px 10px 0 0;
+    }
+
+    .image-view .item .cancel-btn {
+        position: absolute;
+        right: 0;
+        top: 0;
+        display: block;
+        width: 20px;
+        height: 20px;
+        color: #fff;
+        line-height: 20px;
+        text-align: center;
+        background: red;
+        border-radius: 10px;
         cursor: pointer;
     }
-    .goods-type{
-        clear:both;
-    }
-    .o-price{
-        color:#58B7FF;
-    }
-    .often-goods-list{
-        border-bottom:1px solid #C0CCDA;
-        height:auto;
-        overflow: hidden;
-        padding-bottom:10px;
-        background-color:#F9FAFC;
-    }
-    .cookList li{
-        list-style: none;
-        width:23%;
-        border:1px solid #E5E9F2;
-        height: auto;
-        overflow: hidden;
-        background-color:#fff;
-        padding: 2px;
-        float:left;
-        margin: 2px;
-    }
-    .cookList li span{
 
-        display: block;
-        float:left;
+    .image-view .item img {
+        width: 100%;
+        height: 100%;
     }
-    .foodImg{
-        width: 40%;
-    }
-    .foodName{
-        font-size: 18px;
-        padding-left: 10px;
-        color:brown;
-    }
-    .foodPrice{
-        font-size: 16px;
-        padding-left: 10px;
-        padding-top:10px;
+
+    .image-view .view {
+        clear: both;
     }
 </style>
